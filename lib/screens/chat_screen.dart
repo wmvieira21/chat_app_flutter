@@ -1,5 +1,7 @@
-import 'package:chat_app/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:chat_app/utils/utils.dart';
+import 'package:chat_app/widgets/chat_messages.dart';
+import 'package:chat_app/widgets/new_message.dart';
 
 class ChatScreen extends StatelessWidget {
   const ChatScreen({super.key});
@@ -7,10 +9,8 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.primary,
         appBar: AppBar(
-          toolbarHeight: 50,
-          title: Text('Chat App'),
+          title: Text('Flutter Messenger'),
           actions: [
             IconButton(
                 onPressed: () {
@@ -18,13 +18,18 @@ class ChatScreen extends StatelessWidget {
                 },
                 icon: Icon(
                   Icons.exit_to_app,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: Theme.of(context).colorScheme.onSurface,
                   size: 30,
                 ))
           ],
         ),
-        body: Center(
-          child: Text('data'),
+        body: Column(
+          children: [
+            Expanded(
+              child: ChatMessages(),
+            ),
+            NewMessage(),
+          ],
         ));
   }
 }

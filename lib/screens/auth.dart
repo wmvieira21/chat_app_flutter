@@ -27,6 +27,7 @@ class _AuthScreen extends State<AuthScreen> {
   bool isLoading = false;
 
   _onLogin() async {
+    FocusScope.of(context).unfocus();
     if (_formKey.currentState!.validate()) {
       try {
         setState(() {
@@ -44,6 +45,7 @@ class _AuthScreen extends State<AuthScreen> {
   }
 
   _onSignup() async {
+    FocusScope.of(context).unfocus();
     if (_formKey.currentState!.validate()) {
       try {
         setState(() {
@@ -91,6 +93,7 @@ class _AuthScreen extends State<AuthScreen> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    usernameController.dispose();
     super.dispose();
   }
 

@@ -7,6 +7,7 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.primary,
         appBar: AppBar(
           toolbarHeight: 50,
           title: Text('Chat App'),

@@ -1,7 +1,9 @@
-import 'package:chat_app/utils/utils.dart';
-import 'package:chat_app/widgets/user_image_picker.dart';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_app/widgets/user_image_picker.dart';
+import 'package:chat_app/utils/utils.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -16,16 +18,27 @@ class _AuthScreen extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
   late UserCredential user;
-  bool isLogin = true;
+
+  File? userImageFile;
+  String? imageUrlDownloaded;
+  bool isLogingIn = true;
+  bool isLoading = false;
 
   _onLogin() async {
     if (_formKey.currentState!.validate()) {
       try {
+        setState(() {
+          isLoading = true;
+        });
         user = await firebase.signInWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
       } on FirebaseAuthException catch (error) {
         showSnackBarMessage(context, error.message.toString());
+        setState(() {
+          isLoading = false;
+        });
       }
     }
   }
@@ -33,12 +46,45 @@ class _AuthScreen extends State<AuthScreen> {
   _onSignup() async {
     if (_formKey.currentState!.validate()) {
       try {
-        user = await firebase.createUserWithEmailAndPassword(
-            email: emailController.text, password: passwordController.text);
+        setState(() {
+          isLoading = true;
+        });
+        if (userImageFile != null) {
+          user = await _createUserWithEmailAndPassword();
+          imageUrlDownloaded = await _updaloadFileImage();
+          _saveUserToFirestore();
+        } else {
+          throw FirebaseAuthException(
+              code: 'image_error',
+              message: 'Please pick an image before signing up.');
+        }
       } on FirebaseAuthException catch (error) {
         showSnackBarMessage(context, error.message.toString());
+        setState(() {
+          isLoading = false;
+        });
       }
     }
+  }
+
+  Future<UserCredential> _createUserWithEmailAndPassword() async {
+    return await firebase.createUserWithEmailAndPassword(
+        email: emailController.text, password: passwordController.text);
+  }
+
+  Future<void> _saveUserToFirestore() async {
+    await firestore.collection('users').doc(user.user!.uid).set({
+      'username': usernameController.text,
+      'email': emailController.text,
+      'image_url': imageUrlDownloaded,
+    });
+  }
+
+  Future<String> _updaloadFileImage() async {
+    final storageRef =
+        storage.ref().child('user_images').child('${user.user!.uid}.jpg');
+    await storageRef.putFile(userImageFile!);
+    return await storageRef.getDownloadURL();
   }
 
   @override
@@ -72,7 +118,10 @@ class _AuthScreen extends State<AuthScreen> {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (!isLogin) UserImagePicker(),
+                            if (!isLogingIn)
+                              UserImagePicker(
+                                  onImagePick: (pickedImage) =>
+                                      userImageFile = pickedImage),
                             TextFormField(
                               decoration:
                                   InputDecoration(labelText: 'Email Address'),
@@ -87,6 +136,21 @@ class _AuthScreen extends State<AuthScreen> {
                               },
                               controller: emailController,
                             ),
+                            if (!isLogingIn)
+                              TextFormField(
+                                decoration:
+                                    InputDecoration(labelText: 'Username'),
+                                keyboardType: TextInputType.text,
+                                enableSuggestions: false,
+                                validator: (value) {
+                                  if (value!.isEmpty ||
+                                      value.trim().length < 4) {
+                                    return 'Username must have at leat 4 caracters.';
+                                  }
+                                  return null;
+                                },
+                                controller: usernameController,
+                              ),
                             TextFormField(
                               decoration:
                                   InputDecoration(labelText: 'Password'),
@@ -104,7 +168,8 @@ class _AuthScreen extends State<AuthScreen> {
                             SizedBox(
                               height: 20,
                             ),
-                            if (isLogin)
+                            if (isLoading) CircularProgressIndicator(),
+                            if (isLogingIn && !isLoading)
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                     backgroundColor: Theme.of(context)
@@ -113,7 +178,7 @@ class _AuthScreen extends State<AuthScreen> {
                                 onPressed: _onLogin,
                                 child: Text('Log In'),
                               ),
-                            if (!isLogin)
+                            if (!isLogingIn && !isLoading)
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                     backgroundColor: Theme.of(context)
@@ -122,16 +187,17 @@ class _AuthScreen extends State<AuthScreen> {
                                 onPressed: _onSignup,
                                 child: Text('Sign Up'),
                               ),
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  isLogin = !isLogin;
-                                });
-                              },
-                              child: Text(isLogin
-                                  ? 'Create an account'
-                                  : 'Already have an account'),
-                            ),
+                            if (!isLoading)
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    isLogingIn = !isLogingIn;
+                                  });
+                                },
+                                child: Text(isLogingIn
+                                    ? 'Create an account'
+                                    : 'Already have an account'),
+                              ),
                           ],
                         )),
                   ),

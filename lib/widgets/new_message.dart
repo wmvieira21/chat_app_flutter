@@ -49,19 +49,28 @@ class _NewMessage extends State<NewMessage> {
           children: [
             Expanded(
               child: TextField(
-                controller: _messagecontroller,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Send a message...',
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
                 maxLines: 1,
                 autocorrect: true,
                 enableSuggestions: true,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(labelText: 'Send a message...'),
+                controller: _messagecontroller,
               ),
             ),
             IconButton(
                 onPressed: _submitMessage,
                 icon: Icon(
                   Icons.send,
-                  color: Theme.of(context).colorScheme.primary,
+                  size: 25,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                 )),
           ],
         ));

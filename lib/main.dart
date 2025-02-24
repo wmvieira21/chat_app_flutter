@@ -21,9 +21,16 @@ final themeData = ThemeData().copyWith(
     ),
   ),
   appBarTheme: AppBarTheme().copyWith(
-      backgroundColor: colorScheme.secondary,
+      backgroundColor: colorScheme.secondaryContainer,
+      actionsIconTheme:
+          IconThemeData(color: colorScheme.onPrimaryContainer, size: 30),
       toolbarHeight: 60,
-      centerTitle: true),
+      centerTitle: true,
+      titleTextStyle: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: colorScheme.primary,
+      )),
 );
 
 void main() async {

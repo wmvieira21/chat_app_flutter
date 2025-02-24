@@ -35,7 +35,9 @@ class _AuthScreen extends State<AuthScreen> {
         user = await firebase.signInWithEmailAndPassword(
             email: emailController.text, password: passwordController.text);
       } on FirebaseAuthException catch (error) {
-        showSnackBarMessage(context, error.message.toString());
+        if (context.mounted) {
+          showSnackBarMessage(context, error.message.toString());
+        }
         setState(() {
           isLoading = false;
         });
@@ -60,7 +62,9 @@ class _AuthScreen extends State<AuthScreen> {
               message: 'Please pick an image before signing up.');
         }
       } on FirebaseAuthException catch (error) {
-        showSnackBarMessage(context, error.message.toString());
+        if (context.mounted) {
+          showSnackBarMessage(context, error.message.toString());
+        }
         setState(() {
           isLoading = false;
         });

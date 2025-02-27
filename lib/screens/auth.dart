@@ -55,7 +55,7 @@ class _AuthScreen extends State<AuthScreen> {
         if (userImageFile != null) {
           user = await _createUserWithEmailAndPassword();
           imageUrlDownloaded = await _updaloadFileImage();
-          _saveUserToFirestore();
+          await _saveUserToFirestore();
         } else {
           throw FirebaseAuthException(
               code: 'image_error',

@@ -1,5 +1,6 @@
 import 'package:chat_app/utils/utils.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class NewMessage extends StatefulWidget {
@@ -22,7 +23,7 @@ class _NewMessage extends State<NewMessage> {
       return;
     }
 
-    final user = firebase.currentUser!;
+    final user = FirebaseAuth.instance.currentUser!;
     final userData = await firestore.collection('users').doc(user.uid).get();
 
     await firestore.collection('chat').add({
